@@ -62,7 +62,7 @@ class TestPoint:
     def test_add2(self):
         assert isinstance(self.f.add(R2Point(1.0, 0.0)), Segment)
 
-    # Если точка принадлежить окружности, то мощность равна 1, иначе 0
+    # Если точка принадлежит окружности, то мощность равна 1, иначе 0
     def test_card(self):
         assert self.v.cardinality() == 1
         assert self.f.cardinality() == 0
@@ -72,8 +72,9 @@ class TestSegment:
 
     # Инициализация (выполняется для каждого из тестов класса)
     def setup_method(self):
-        self.f = Segment(R2Point(0.0, 0.0), R2Point(1.0, 0.0))
-        self.v = Segment(R2Point(1.0, 1.0), R2Point(-1.0, -1.0))
+        self.f, self.v = Void(), Void()
+        self.f = self.f.add(R2Point(0.0, 0.0)).add(R2Point(1.0, 0.0))
+        self.v = self.v.add(R2Point(1.0, 1.0)).add(R2Point(-1.0, -1.0))
 
     # Двуугольник является фигурой
     def test_figure(self):
@@ -104,25 +105,33 @@ class TestSegment:
         assert isinstance(self.f.add(R2Point(0.0, 1.0)), Polygon)
 
     # Мощность точек пересечений равна удвоенному числу,
-    #  аналогично ситуации с периметром
+    # аналогично ситуации с периметром
     def test_card(self):
         assert self.v.cardinality() == 4
+
+    def test_card0(self):
+        v = Void()
+        assert v.add(R2Point(1,1)).add(R2Point(-1,1)).cardinality() == 2
+
+    def test_card1(self):
+        f = Void()
+        f = f.add(R2Point(1.0, 1.0)).add(R2Point(-1.0, -1.0))
+        assert f.cardinality() == 4
 
 
 class TestPolygon:
 
     # Инициализация (выполняется для каждого из тестов класса)
     def setup_method(self):
-        self.f = Polygon(
+        self.f, self.v = Void(), Void()
+        self.f = self.f.add(
+            R2Point(0.0, 0.0)).add(
+                R2Point(1.0, 0.0)).add(R2Point(0.0, 1.0))
+        self.v = self.v.add(
             R2Point(
-                0.0, 0.0), R2Point(
-                1.0, 0.0), R2Point(
-                0.0, 1.0))
-        self.v = Polygon(
-            R2Point(
-                0.0, 0.0), R2Point(
-                0.9, 0.9), R2Point(
-                -0.9, 0.9))
+                0.0, 0.0)).add(R2Point(0.9, 0.9))
+        self.v.cardinality()
+        self.v = self.v.add(R2Point(-0.9, 0.9))
 
     # Многоугольник является фигурой
     def test_figure(self):
@@ -136,7 +145,7 @@ class TestPolygon:
     #   изначально их три
     def test_vertexes1(self):
         assert self.f.points.size() == 3
-    #   добавление точки внутрь многоугольника не меняет их количества
+    # добавление точки внутрь многоугольника не меняет их количества
 
     def test_vertexes2(self):
         assert self.f.add(R2Point(0.1, 0.1)).points.size() == 3
@@ -182,6 +191,15 @@ class TestPolygon:
 
     # Вычисление мощности множества точек пересечения
     def test_card(self):
-        assert self.v.add(R2Point(-0.9, -0.9)).add(R2Point(0.9, -0.9)). \
-            add(R2Point(12.0, 12.0)).cardinality() == 4
-        assert self.v.add(R2Point(-12.0, -12.0)).cardinality() == 0
+        assert self.v.add(
+            R2Point(
+                -0.9,
+                -0.9)).add(
+                    R2Point(0.9, -0.9)).cardinality() == 8
+
+    def test_card0(self):
+        f = Void()
+        f = f.add(R2Point(1.0, 1.0)).add(R2Point(-1.0, -1.0))
+        f.cardinality()
+        f = f.add(R2Point(1, -1)).add(R2Point(-1, 1))
+        assert f.cardinality() == 4
