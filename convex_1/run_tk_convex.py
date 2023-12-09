@@ -35,8 +35,6 @@ setattr(Polygon, 'draw', polygon_draw)
 tk = TkDrawer()
 f = Void()
 tk.clean()
-q = 0
-card = 0
 
 try:
     while True:
@@ -44,15 +42,7 @@ try:
         tk.clean()
         f.draw(tk)
         print(f"S = {f.area()}, P = {f.perimeter()}")
-        if f.area() == 0:
-            card = f.cardinality()
-        else:
-            if not(q):
-                card = f.cardinality()
-                q = 1
-            elif f.ind():
-                card = f.cardinality()
-        print(f"число пересечений {card}\n")
+        print(f"число пересечений {f.cardinality()}\n")
 except(EOFError, KeyboardInterrupt):
     print("\nStop")
     tk.close()
