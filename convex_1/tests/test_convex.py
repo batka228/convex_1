@@ -98,10 +98,11 @@ class TestSegment:
 
     # При добавлении точки двуугольник может превратиться в другой двуугольник
     def test_add2(self):
+        self.f.cardinality()
         assert isinstance(self.f.add(R2Point(2.0, 0.0)), Segment)
 
     # При добавлении точки двуугольник может превратиться в треугольник
-    def test_add2(self):
+    def test_add3(self):
         assert isinstance(self.f.add(R2Point(0.0, 1.0)), Polygon)
 
     # Мощность точек пересечений равна удвоенному числу,
@@ -111,11 +112,27 @@ class TestSegment:
 
     def test_card0(self):
         v = Void()
-        assert v.add(R2Point(1,1)).add(R2Point(-1,1)).cardinality() == 2
+        v = v.add(R2Point(1, 1))
+        v = v.add(R2Point(-1, 1))
+        assert v.cardinality() == 2
 
     def test_card1(self):
         f = Void()
         f = f.add(R2Point(1.0, 1.0)).add(R2Point(-1.0, -1.0))
+        assert f.cardinality() == 4
+
+    def test_inside(self):
+        f = Void()
+        f = f.add(R2Point(0.0, 0.0)).add(R2Point(1.0, 0.0))
+        f.cardinality()
+        f = f.add(R2Point(2.0, 0.0))
+        assert f.cardinality() == 2
+
+    def test_inside1(self):
+        f = Void()
+        f = f.add(R2Point(0.0, 0.0)).add(R2Point(1.0, 0.0))
+        f.cardinality()
+        f = f.add(R2Point(-2.0, 0.0))
         assert f.cardinality() == 4
 
 
@@ -203,3 +220,44 @@ class TestPolygon:
         f.cardinality()
         f = f.add(R2Point(1, -1)).add(R2Point(-1, 1))
         assert f.cardinality() == 4
+
+    def test_card1(self):
+        f = Void()
+        f = f.add(R2Point(0.0, 0.0))
+        f = f.add(R2Point(1.0, 0.0))
+        f.cardinality()
+        f = f.add(R2Point(-1.0, 0.0))
+        f = f.add(R2Point(0.0, 1.0))
+        f = f.add(R2Point(0.0, -1.0))
+        f = f.add(R2Point(0.0, 30000000.0))
+        assert f.cardinality() == 3
+
+    def test_card2(self):
+        f = Void()
+        f = f.add(R2Point(0.0, 0.0))
+        f = f.add(R2Point(1.0, 0.0))
+        f.cardinality()
+        f = f.add(R2Point(-1.0, 0.0))
+        f = f.add(R2Point(0.0, 1.0))
+        assert f.cardinality() == 3
+
+    def test_card3(self):
+        f = Void()
+        f = f.add(R2Point(0.0, 2.0))
+        f = f.add(R2Point(2.0, 0.0))
+        assert f.cardinality() == 0
+
+    def test_card4(self):
+        f = Void()
+        f = f.add(R2Point(0.0, 2.0))
+        f = f.add(R2Point(2.0, 0.0))
+        f = f.add(R2Point(-2.0, -2.0))
+        assert f.cardinality() == 4
+
+    def test_card5(self):
+        f = Void()
+        f = f.add(R2Point(1.0, 0.0))
+        f = f.add(R2Point(0.0, -1.0))
+        f = f.add(R2Point(-1.0, -1.0))
+        f = f.add(R2Point(0.0, 0.0))
+        assert f.cardinality() == 3
