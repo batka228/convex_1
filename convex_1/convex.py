@@ -1,5 +1,6 @@
 from deq import Deq
 from r2point import R2Point
+import math
 
 
 class Figure:
@@ -71,174 +72,79 @@ class Segment(Figure):
 
     def cardinality(self, A=None, B=None, mode=0):
 
-        card = 0
-
         if mode == 0:
             A, B = self.p, self.q
-            xa, ya = self.p.x, self.p.y
-            xb, yb = self.q.x, self.q.y
+            x1, y1 = self.p.x, self.p.y
+            x2, y2 = self.q.x, self.q.y
         elif mode == 1:
-            xa, ya = A.x, A.y
-            xb, yb = B.x, B.y
+            x1, y1 = A.x, A.y
+            x2, y2 = B.x, B.y
 
-        r = 1
-        a = yb - ya
-        b = xa - xb
-        c = xb * ya - xa * yb
+        a = y2 - y1
+        b = x1 - x2
+        c = x2 * y1 - x1 * y2
 
-        x0 = -a * c / (a * a + b * b)
-        y0 = -b * c / (a * a + b * b)
+        discriminant = (a**2 + b**2) - c**2
+        if discriminant < 0:
+            return 0
+        else:
+            x_1 = round(
+                (-a * c + b * math.sqrt(discriminant)) / (a**2 + b**2), 5
+            )
+            y_1 = round(
+                (-b * c - a * math.sqrt(discriminant)) / (a**2 + b**2), 5
+            )
+            x_2 = round(
+                (-a * c - b * math.sqrt(discriminant)) / (a**2 + b**2), 5
+            )
+            y_2 = round(
+                (-b * c + a * math.sqrt(discriminant)) / (a**2 + b**2), 5
+            )
 
-        if c * c == r * r * (a * a + b * b):
-            if not ((x0 < xa and x0 < xb) or (x0 > xa and x0 > xb)):
-                card = 1
-                self.point_.append([A, B, 1, [R2Point(x0, y0)]])
-                if not (R2Point(x0, y0) in self.circle_point):
-                    self.circle_point.append(R2Point(x0, y0))
-        elif c * c < r * r * (a * a + b * b):
-            d = r * r - c * c / (a * a + b * b)
-            mult = (d / (a * a + b * b)) ** 0.5
-            ax = x0 + b * mult
-            bx = x0 - b * mult
-            ay = y0 - a * mult
-            by = y0 + a * mult
-            ccc = 0
-            if (xa**2 + ya**2 == 1) and (
-                (xa != ax and ya != ay) or (xa != bx and ya != by)
-            ):
-                if ((xa - ax) ** 2 + (ya - ay) ** 2) ** 0.5 < (
-                    (xa - bx) ** 2 + (ya - by) ** 2
-                ) ** 0.5:
+            q, d = 0, 0
+            points = []
+            if min(x1, x2) <= x_1 <= max(x1, x2) and min(
+                y1, y2
+            ) <= y_1 <= max(y1, y2):
+                points.append((x_1, y_1))
+                q = 1
+                if not (R2Point(x_1, y_1) in self.circle_point):
+                    self.circle_point.append(R2Point(x_1, y_1))
+            if min(x1, x2) <= x_2 <= max(x1, x2) and min(
+                y1, y2
+            ) <= y_2 <= max(y1, y2):
+                if (x_2, y_2) not in points:
+                    points.append((x_2, y_2))
+                    d = 1
                     if not (
-                        (bx < xa and bx < xb) or (bx > xa and bx > xb)) and (
-                        not (
-                            (by < ya and by < yb) or (by > ya and by > yb))
+                        R2Point(x_2, y_2) in self.circle_point
                     ):
-                        card = 2
-                        self.point_.append(
-                            [A, B, 2, [R2Point(ax, ay), R2Point(bx, by)]]
+                        self.circle_point.append(
+                            R2Point(x_2, y_2)
                         )
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                    else:
-                        card = 1
-                        self.point_.append([A, B, 1, [R2Point(ax, ay)]])
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                else:
-                    if not (
-                        (ax < xa and ax < xb) or (ax > xa and ax > xb)) and (
-                        not (
-                            (ay < ya and ay < yb) or (ay > ya and ay > yb))
-                    ):
-                        card = 2
-                        self.point_.append(
-                            [A, B, 2, [R2Point(ax, ay), R2Point(bx, by)]]
-                        )
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                    else:
-                        card = 1
-                        self.point_.append([A, B, 1, [R2Point(bx, by)]])
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                ccc = 1
-            elif (xb**2 + yb**2 == 1) and (
-                (xb != ax and yb != ay) or (xb != bx and yb != by)
-            ):
-                if ((xb - ax) ** 2 + (yb - ay) ** 2) ** 0.5 < (
-                    (xb - bx) ** 2 + (yb - by) ** 2
-                ) ** 0.5:
-                    if not (
-                        (bx < xa and bx < xb) or (bx > xa and bx > xb)) and (
-                        not (
-                            (by < ya and by < yb) or (by > ya and by > yb))
-                    ):
-                        card = 2
-                        self.point_.append(
-                            [A, B, 2, [R2Point(ax, ay), R2Point(bx, by)]]
-                        )
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                    else:
-                        card = 1
-                        self.point_.append([A, B, 1, [R2Point(ax, ay)]])
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                else:
-                    if not (
-                        (ax < xa and ax < xb) or (ax > xa and ax > xb)) and (
-                        not (
-                            (ay < ya and ay < yb) or (ay > ya and ay > yb))
-                    ):
-                        card = 2
-                        self.point_.append(
-                            [A, B, 2, [R2Point(ax, ay), R2Point(bx, by)]]
-                        )
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                    else:
-                        card = 1
-                        self.point_.append([A, B, 1, [R2Point(bx, by)]])
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                ccc = 1
 
-            if (
-                (xa**2 + ya**2 == 1 and xb**2 + yb**2 < 1)
-                or (xb**2 + yb**2 == 1 and xa**2 + ya**2 < 1)
-            ) and not (ccc):
-                card = 1
-                if xa**2 + ya**2 == 1:
-                    self.point_.append([A, B, 1, [R2Point(xa, ya)]])
-                    if not (R2Point(xa, ya) in self.circle_point):
-                        self.circle_point.append(R2Point(xa, ya))
-                elif xb**2 + yb**2 == 1:
-                    self.point_.append([A, B, 1, [R2Point(xb, yb)]])
-                    if not (R2Point(xb, yb) in self.circle_point):
-                        self.circle_point.append(R2Point(xb, yb))
-                ccc = 1
+            if q == 1 and d == 1:
+                self.point_.append(
+                    [
+                        A,
+                        B,
+                        2,
+                        [
+                            R2Point(x_1, y_1),
+                            R2Point(x_2, y_2),
+                        ],
+                    ]
+                )
+            elif q == 1:
+                self.point_.append(
+                    [A, B, 1, [R2Point(x_1, y_1)]]
+                )
+            elif d == 1:
+                self.point_.append(
+                    [A, B, 1, [R2Point(x_2, y_2)]]
+                )
 
-            if (
-                (not ((ax < xa and ax < xb) or (ax > xa and ax > xb)))
-                and (not ((ay < ya and ay < yb) or (ay > ya and ay > yb)))
-                and (not ((bx < xa and bx < xb) or (bx > xa and bx > xb)))
-                and (not ((by < ya and by < yb) or (by > ya and by > yb)))
-            ) and not (ccc):
-                card = 2
-                self.point_.append([A, B, 2,
-                                    [R2Point(ax, ay), R2Point(bx, by)]])
-                if not (R2Point(ax, ay) in self.circle_point):
-                    self.circle_point.append(R2Point(ax, ay))
-                if not (R2Point(bx, by) in self.circle_point):
-                    self.circle_point.append(R2Point(bx, by))
-            elif (
-                (not ((ax < xa and ax < xb) or (ax > xa and ax > xb)))
-                and (not ((ay < ya and ay < yb) or (ay > ya and ay > yb)))
-                and not (ccc)
-            ):
-                card = 1
-                self.point_.append([A, B, 1, [R2Point(ax, ay)]])
-                if not (R2Point(ax, ay) in self.circle_point):
-                    self.circle_point.append(R2Point(ax, ay))
-            elif (
-                not ((bx < xa and bx < xb) or (bx > xa and bx > xb))
-                and (not ((by < ya and by < yb) or (by > ya and by > yb)))
-            ) and not (ccc):
-                card = 1
-                self.point_.append([A, B, 1, [R2Point(bx, by)]])
-                if not (R2Point(bx, by) in self.circle_point):
-                    self.circle_point.append(R2Point(bx, by))
-
-        return 2 * card
+            return len(points) * 2
 
 
 class Polygon(Figure):
@@ -315,155 +221,74 @@ class Polygon(Figure):
     # точки пересечения заданного ребра
     def card(self, A, B):
 
-        xa, ya = A.x, A.y
-        xb, yb = B.x, B.y
+        x1, y1 = A.x, A.y
+        x2, y2 = B.x, B.y
 
-        r = 1
-        a = yb - ya
-        b = xa - xb
-        c = xb * ya - xa * yb
+        a = y2 - y1
+        b = x1 - x2
+        c = x2 * y1 - x1 * y2
 
-        x0 = -a * c / (a * a + b * b)
-        y0 = -b * c / (a * a + b * b)
+        discriminant = (a**2 + b**2) - c**2
+        if discriminant < 0:
+            return self
+        else:
+            x_1 = round(
+                (-a * c + b * math.sqrt(discriminant)) / (a**2 + b**2), 5
+            )
+            y_1 = round(
+                (-b * c - a * math.sqrt(discriminant)) / (a**2 + b**2), 5
+            )
+            x_2 = round(
+                (-a * c - b * math.sqrt(discriminant)) / (a**2 + b**2), 5
+            )
+            y_2 = round(
+                (-b * c + a * math.sqrt(discriminant)) / (a**2 + b**2), 5
+            )
 
-        if c * c == r * r * (a * a + b * b):
-            if not ((x0 < xa and x0 < xb) or (x0 > xa and x0 > xb)):
-                self.point_.append([A, B, 1, [R2Point(x0, y0)]])
-                if not (R2Point(x0, y0) in self.circle_point):
-                    self.circle_point.append(R2Point(x0, y0))
-
-        elif c * c < r * r * (a * a + b * b):
-            d = r * r - c * c / (a * a + b * b)
-            mult = (d / (a * a + b * b)) ** 0.5
-            ax = x0 + b * mult
-            bx = x0 - b * mult
-            ay = y0 - a * mult
-            by = y0 + a * mult
-            ccc = 0
-            if (xa**2 + ya**2 == 1) and (
-                (xa != ax and ya != ay) or (xa != bx and ya != by)
-            ):
-                if ((xa - ax) ** 2 + (ya - ay) ** 2) ** 0.5 < (
-                    (xa - bx) ** 2 + (ya - by) ** 2
-                ) ** 0.5:
+            q, d = 0, 0
+            points = []
+            if min(x1, x2) <= x_1 <= max(x1, x2) and min(
+                y1, y2
+            ) <= y_1 <= max(y1, y2):
+                points.append((x_1, y_1))
+                q = 1
+                if not (R2Point(x_1, y_1) in self.circle_point):
+                    self.circle_point.append(R2Point(x_1, y_1))
+            if min(x1, x2) <= x_2 <= max(x1, x2) and min(
+                y1, y2
+            ) <= y_2 <= max(y1, y2):
+                if (x_2, y_2) not in points:
+                    points.append((x_2, y_2))
+                    d = 1
                     if not (
-                        (bx < xa and bx < xb) or (bx > xa and bx > xb)) and (
-                        not (
-                            (by < ya and by < yb) or (by > ya and by > yb))
+                        R2Point(x_2, y_2) in self.circle_point
                     ):
-                        self.point_.append(
-                            [A, B, 2, [R2Point(ax, ay), R2Point(bx, by)]]
+                        self.circle_point.append(
+                            R2Point(x_2, y_2)
                         )
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                    else:
-                        self.point_.append([A, B, 1, [R2Point(ax, ay)]])
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                else:
-                    if not (
-                        (ax < xa and ax < xb) or (ax > xa and ax > xb)) and (
-                        not (
-                            (ay < ya and ay < yb) or (ay > ya and ay > yb))
-                    ):
-                        self.point_.append(
-                            [A, B, 2, [R2Point(ax, ay), R2Point(bx, by)]]
-                        )
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                    else:
-                        self.point_.append([A, B, 1, [R2Point(bx, by)]])
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                ccc = 1
-            elif (xb**2 + yb**2 == 1) and (
-                (xb != ax and yb != ay) or (xb != bx and yb != by)
-            ):
-                if ((xb - ax) ** 2 + (yb - ay) ** 2) ** 0.5 < (
-                    (xb - bx) ** 2 + (yb - by) ** 2
-                ) ** 0.5:
-                    if not (
-                        (bx < xa and bx < xb) or (bx > xa and bx > xb)) and (
-                        not (
-                            (by < ya and by < yb) or (by > ya and by > yb))
-                    ):
-                        self.point_.append(
-                            [A, B, 2, [R2Point(ax, ay), R2Point(bx, by)]]
-                        )
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                    else:
-                        self.point_.append([A, B, 1, [R2Point(ax, ay)]])
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                else:
-                    if not (
-                        (ax < xa and ax < xb) or (ax > xa and ax > xb)) and (
-                        not (
-                            (ay < ya and ay < yb) or (ay > ya and ay > yb))
-                    ):
-                        self.point_.append(
-                            [A, B, 2, [R2Point(ax, ay), R2Point(bx, by)]]
-                        )
-                        if not (R2Point(ax, ay) in self.circle_point):
-                            self.circle_point.append(R2Point(ax, ay))
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                    else:
-                        self.point_.append([A, B, 1, [R2Point(bx, by)]])
-                        if not (R2Point(bx, by) in self.circle_point):
-                            self.circle_point.append(R2Point(bx, by))
-                ccc = 1
 
-            if (
-                (xa**2 + ya**2 == 1 and xb**2 + yb**2 < 1)
-                or (xb**2 + yb**2 == 1 and xa**2 + ya**2 < 1)
-            ) and not (ccc):
-                if xa**2 + ya**2 == 1:
-                    self.point_.append([A, B, 1, [R2Point(xa, ya)]])
-                    if not (R2Point(xa, ya) in self.circle_point):
-                        self.circle_point.append(R2Point(xa, ya))
-                elif xb**2 + yb**2 == 1:
-                    self.point_.append([A, B, 1, [R2Point(xb, yb)]])
-                    if not (R2Point(xb, yb) in self.circle_point):
-                        self.circle_point.append(R2Point(xb, yb))
-                ccc = 1
+            if q == 1 and d == 1:
+                self.point_.append(
+                    [
+                        A,
+                        B,
+                        2,
+                        [
+                            R2Point(x_1, y_1),
+                            R2Point(x_2, y_2),
+                        ],
+                    ]
+                )
+            elif q == 1:
+                self.point_.append(
+                    [A, B, 1, [R2Point(x_1, y_1)]]
+                )
+            elif d == 1:
+                self.point_.append(
+                    [A, B, 1, [R2Point(x_2, y_2)]]
+                )
 
-            if (
-                (not ((ax < xa and ax < xb) or (ax > xa and ax > xb)))
-                and (not ((ay < ya and ay < yb) or (ay > ya and ay > yb)))
-                and (not ((bx < xa and bx < xb) or (bx > xa and bx > xb)))
-                and (not ((by < ya and by < yb) or (by > ya and by > yb)))
-            ) and not (ccc):
-                self.point_.append([A, B, 2,
-                                    [R2Point(ax, ay), R2Point(bx, by)]])
-                if not (R2Point(ax, ay) in self.circle_point):
-                    self.circle_point.append(R2Point(ax, ay))
-                if not (R2Point(bx, by) in self.circle_point):
-                    self.circle_point.append(R2Point(bx, by))
-            elif (
-                (not ((ax < xa and ax < xb) or (ax > xa and ax > xb)))
-                and (not ((ay < ya and ay < yb) or (ay > ya and ay > yb)))
-                and not (ccc)
-            ):
-                self.point_.append([A, B, 1, [R2Point(ax, ay)]])
-                if not (R2Point(ax, ay) in self.circle_point):
-                    self.circle_point.append(R2Point(ax, ay))
-            elif (
-                not ((bx < xa and bx < xb) or (bx > xa and bx > xb))
-                and (not ((by < ya and by < yb) or (by > ya and by > yb)))
-            ) and not (ccc):
-                self.point_.append([A, B, 1, [R2Point(bx, by)]])
-                if not (R2Point(bx, by) in self.circle_point):
-                    self.circle_point.append(R2Point(bx, by))
-
-        return self
+            return self
 
     def search_del(self, p, d):
         for i in range(len(self.point_)):
@@ -478,35 +303,4 @@ class Polygon(Figure):
         return self
 
     def cardinality(self):
-        lst = []
-        i, j = 0, 1
-        while i != len(self.circle_point):
-            while j != len(self.circle_point):
-                if (
-                    round(self.circle_point[i].x, 5) ==
-                    round(self.circle_point[j].x, 5)
-                ) and (
-                    round(self.circle_point[i].y, 5) ==
-                    round(self.circle_point[j].y, 5)
-                ):
-                    lst.append(self.circle_point[i])
-                j += 1
-            i += 1
-            j = i + 1
-        for q in lst:
-            self.circle_point.remove(q)
         return len(self.circle_point)
-
-
-if __name__ == "__main__":
-    f = Void()
-
-    f = f.add(R2Point(0.0, 0.0))
-    f = f.add(R2Point(0.9, 0.9))
-    f.cardinality()
-    f = f.add(R2Point(0.9, -0.9))
-    f = f.add(R2Point(-0.9, -0.9))
-    f = f.add(R2Point(-0.9, 0.9))
-    # f = f.add(R2Point(0.0, 2.0))
-
-    print(f.cardinality())
